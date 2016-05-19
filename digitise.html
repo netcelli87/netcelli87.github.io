@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    
+<head>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>	
+	<title>Lake digitise</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<style>
+		#info {
+		  color: #ffc;
+		}
+
+		.lngLat {
+		  color: #fff;
+		}
+		.lngLat .one {
+		  padding-left: 210px;
+		}
+		.lngLat .two {
+		  padding-left: 34px;
+		}
+
+		#info, .lngLat {
+		  font-family: arial, sans-serif;
+		  font-size: 18px;
+		  padding-top: 10px;
+		}
+
+
+	</style>
+
+	<script>	
+	/**
+	 * Initialise Google Maps and polygon
+	 * @param lat  Latitude of the map center
+	 * @param long Longitude of the map center
+	 */
+	function initialize(lat, long) {
+	  // Map options
+	  var map_options = {
+		zoom: 16,
+		center: new google.maps.LatLng(lat, long),
+		mapTypeId: google.maps.MapTypeId.RoadMap,
+		streetViewControl: false,
+	  };
+	  var map = new google.maps.Map(document.getElementById('map-canvas'), map_options);
+
+	  // Add polygon coordinates. Add at least 3 points
+	  var triangle = [
+		new google.maps.LatLng(lat, long),
+		new google.maps.LatLng(lat, long),
+		new google.maps.LatLng(lat, long)
+	  ];
+	  // Add polygon
+	  polygon = new google.maps.Polygon({
+		paths: triangle,
+		draggable: true,
+		editable: true,
+		strokeColor: '#FF0000',
+		strokeOpacity: 0.8,
+		strokeWeight: 2,
+		fillColor: '#FF0000',
+		fillOpacity: 0.35
+	  });
+	  polygon.setMap(map);
+	  
+	  // Register events
+	  google.maps.event.addListener(polygon.getPath(), "insert_at", getPolygonCoords);
+	  google.maps.event.addListener(polygon.getPath(), "set_at", getPolygonCoords);
+	}
+
+	/**
+	 * Returns the coordinates of polygon points
+	 */
+	//Display Coordinates below map
+	function getPolygonCoords() {
+	  content = "";
+	  for (var i = 0; i < polygon.getPath().getLength(); i++) {
+	  	content += polygon.getPath().getAt(i).toUrlValue(7) + "\n";
+	  }
+	  $("textarea").html(content);
+	}
+	</script>
+</head>
+
+<body onload="initialize(51.245973, -2.424889)">
+	<div class="container">
+		<h1>Digitise lake <small>&mdash; a tool to create quick maps of lakes</small></h1>
+		<p>The tool is very straightforward to use. Just click, drag & drop to add and remove polygon points. The coordinates are added in the box below in the WGS84 datum. 
+		Pay attention that sometimes coordinates are affected by errors.</p>
+		<form class="form-inline" style="margin-bottom:10px">
+		  <div class="form-group">
+   		 	<label class="sr-only" for="lat">Latitude</label>
+   		    <input type="text" class="form-control" id="lat" placeholder="Latitude" value="51.245973">
+   		    <label class="sr-only" for="long">Longitude</label>
+   		    <input type="text" class="form-control" id="long" placeholder="Longitude" value="-2.424889">
+		  </div>
+		  <button type="button" class="btn btn-primary" id="update">Update map</button>
+		</form>
+		<div class="panel panel-default">
+		  <div class="panel-body">
+    		  <div id="map-canvas" style="width:auto;height:500px;"></div>
+		  </div>
+		</div>
+		<h2>Coordinates</h2>
+		<textarea class="form-control" rows="10"></textarea>
+  </div>
+  <script>
+  	// Update map center
+    $("#update").on("click", function(e) {
+		initialize($("#lat").val(), $("#long").val());
+	});
+	</script>
+</body>
+</html>
